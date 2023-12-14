@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "LightPhotos (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "LightPhotos (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}

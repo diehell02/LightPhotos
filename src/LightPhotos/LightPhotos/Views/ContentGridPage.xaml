@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="LightPhotos.Views.ContentGridPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:LightPhotos.Models"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            x:Uid="ContentGrid_Title"
+            Grid.Row="0"
+            Style="{StaticResource PageTitleStyle}" />
+        <controls:AdaptiveGridView
+            Grid.Row="1"
+            animations:Connected.ListItemElementName="itemThumbnail"
+            animations:Connected.ListItemKey="animationKeyContentGrid"
+            DesiredWidth="180"
+            IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
+            ItemHeight="160"
+            ItemsSource="{x:Bind ViewModel.BitmapImageSource, Mode=OneWay}"
+            SelectionMode="None"
+            StretchContentForSingleRow="False">
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="models:Picture">
+                    <Grid x:Name="itemThumbnail">
+                        <!--<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <FontIcon
+                                Glyph="{x:Bind Symbol}"
+                                AutomationProperties.Name="{x:Bind SymbolName}" />
+                            <TextBlock
+                                Margin="{StaticResource XXSmallTopMargin}"
+                                HorizontalAlignment="Center"
+                                Style="{ThemeResource BodyTextStyle}"
+                                Text="{x:Bind Company}" />
+                        </StackPanel>-->
+                        <Image Source="{x:Bind ThumbnailBitmapImage}" />
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
+    </Grid>
+</Page>
