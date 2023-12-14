@@ -1,0 +1,2 @@
+# LightPhotos
+Lightweight photo viewer
