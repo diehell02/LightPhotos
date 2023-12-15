@@ -12,14 +12,14 @@
 
   <Identity
     Name="e048d54d-2336-4eb6-a53a-1f1bb3fa292a"
-    Publisher="CN=万车利"
+    Publisher="CN=Cade"
     Version="1.0.0.0" />
     
   <mp:PhoneIdentity PhoneProductId="e048d54d-2336-4eb6-a53a-1f1bb3fa292a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
     
   <Properties>
-    <DisplayName>LightPhotos</DisplayName>
-    <PublisherDisplayName>万车利</PublisherDisplayName>
+    <DisplayName>Light Photos</DisplayName>
+    <PublisherDisplayName>Cade</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
