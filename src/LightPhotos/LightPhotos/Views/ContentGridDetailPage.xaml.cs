@@ -17,6 +17,7 @@ public sealed partial class ContentGridDetailPage : Page
     private bool isScale = false;
     private double positionPressedX;
     private double positionPressedY;
+    private bool pointerPressed = false;
 
     public ContentGridDetailViewModel ViewModel
     {
@@ -77,11 +78,16 @@ public sealed partial class ContentGridDetailPage : Page
     {
         positionPressedX = x;
         positionPressedY = y;
+        pointerPressed = true;
     }
 
     private void MovePosition(double x, double y)
     {
         if (PictureImage.RenderTransform is not MatrixTransform matrixTransform)
+        {
+            return;
+        }
+        if (!pointerPressed)
         {
             return;
         }
@@ -102,18 +108,33 @@ public sealed partial class ContentGridDetailPage : Page
         matrixTransform.Matrix = scaleMatrix;
     }
 
+    private void SetPositionReleased()
+    {
+        positionPressedX = 0;
+        positionPressedY = 0;
+        pointerPressed = false;
+    }
+
     #region Manipulation
 
     private void Image_ManipulationStarting(object sender, Microsoft.UI.Xaml.Input.ManipulationStartingRoutedEventArgs e)
     {
+        if (e.Pivot is null)
+        {
+            return;
+        }
+        SetPositionPressed(e.Pivot.Center.X, e.Pivot.Center.Y);
     }
 
     private void Image_ManipulationDelta(object sender, Microsoft.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
     {
+        MovePosition(e.Position.X - positionPressedX, e.Position.Y - positionPressedY);
+        ScaleImage(e.Delta.Scale, e.Delta.Scale, e.Position.X, e.Position.Y);
     }
 
     private void Image_ManipulationCompleted(object sender, Microsoft.UI.Xaml.Input.ManipulationCompletedRoutedEventArgs e)
     {
+        SetPositionReleased();
     }
 
     #endregion
@@ -138,28 +159,46 @@ public sealed partial class ContentGridDetailPage : Page
 
     private void PictureImage_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-
+        // Prevent most handlers along the event route from handling the same event again.
+        e.Handled = true;
+        SetPositionReleased();
     }
 
     private void PictureImage_PointerCanceled(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-
+        // Prevent most handlers along the event route from handling the same event again.
+        e.Handled = true;
+        SetPositionReleased();
     }
 
     private void PictureImage_PointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-
+        // Prevent most handlers along the event route from handling the same event again.
+        e.Handled = true;
+        SetPositionReleased();
     }
 
     private void PictureImage_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
+        // Prevent most handlers along the event route from handling the same event again.
+        e.Handled = true;
         var ptrPt = e.GetCurrentPoint(PictureImage);
-        if (ptrPt.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
+        if (ptrPt.PointerDeviceType != Microsoft.UI.Input.PointerDeviceType.Mouse)
         {
-            if (!ptrPt.Properties.IsHorizontalMouseWheel)
-            {
-            }
-        
+            return;
+        }
+        if (ptrPt.Properties.IsHorizontalMouseWheel)
+        {
+            return;
+        }
+        var point = e.GetCurrentPoint(PictureImage).Position;
+        if (ptrPt.Properties.MouseWheelDelta > 0)
+        {
+            ScaleImage(1.05, 1.05, point.X, point.Y);
+        }
+        else if (ptrPt.Properties.MouseWheelDelta < 0)
+        {
+            ScaleImage(0.95, 0.95, point.X, point.Y);
         }
     }
 
