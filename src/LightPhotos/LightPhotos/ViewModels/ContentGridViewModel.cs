@@ -48,14 +48,11 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
                 var bitmapImage = new BitmapImage();
                 var picture = new Picture(bitmapImage, file);
                 var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-                Log.Information("GetThumbnailAsync Finished");
                 await bitmapImage?.SetSourceAsync(thumbnail);
                 result.Add(picture);
             }
             return result;
         }
-
-        static ulong fetchCount;
 
         public Picture Fetch(int index)
         {
@@ -85,7 +82,6 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
                 await bitmapImage?.SetSourceAsync(thumbnail);
                 picture.StorageFile = file;
                 picture.ThumbnailBitmapImage = bitmapImage;
-                Log.Debug($"LoadData:{fetchCount++}");
             });
         }
     }

@@ -53,7 +53,6 @@ public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, 
     {
         get
         {
-            Log.Debug($"index:{index}");
             return FetchFromIndex(index);
         }
         set => throw new NotImplementedException(); 
@@ -148,7 +147,7 @@ public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, 
         //var trackedRange = trackedItems[0];
         //for (var i = trackedRange.FirstIndex; i <= trackedRange.LastIndex; i++)
         //{
-        //    FetchFromIndex(i);
+        //    _itemsProvider.LoadData(FetchFromIndex(i));
         //}
         for (var i = visibleRange.FirstIndex; i <= visibleRange.LastIndex; i++)
         {

@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using LightPhotos.Contracts.Services;
 using LightPhotos.Helpers;
-
+using LightPhotos.Services;
 using Microsoft.UI.Xaml;
 
 using Windows.ApplicationModel;
@@ -16,6 +16,7 @@ namespace LightPhotos.ViewModels;
 public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private ElementTheme _elementTheme;
@@ -28,11 +29,17 @@ public partial class SettingsViewModel : ObservableRecipient
         get;
     }
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService)
+    public ICommand GoBackCommand
+    {
+        get;
+    }
+
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, INavigationService navigationService)
     {
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
         _versionDescription = GetVersionDescription();
+        _navigationService = navigationService;
 
         SwitchThemeCommand = new RelayCommand<ElementTheme>(
             async (param) =>
@@ -43,6 +50,7 @@ public partial class SettingsViewModel : ObservableRecipient
                     await _themeSelectorService.SetThemeAsync(param);
                 }
             });
+        GoBackCommand = new RelayCommand(OnGoBack);
     }
 
     private static string GetVersionDescription()
@@ -61,5 +69,13 @@ public partial class SettingsViewModel : ObservableRecipient
         }
 
         return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+    }
+
+    private void OnGoBack()
+    {
+        if (_navigationService.CanGoBack)
+        {
+            _navigationService.GoBack();
+        }
     }
 }
