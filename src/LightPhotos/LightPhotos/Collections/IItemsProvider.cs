@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LightPhotos.System.Collections;
+namespace LightPhotos.Collections;
 public interface IItemsProvider<T>
 {
     int Count
@@ -20,5 +20,7 @@ public interface IItemsProvider<T>
     /// <returns></returns>
     Task<IList<T>> Fetch(int startIndex, uint count);
 
-    Task<T> Fetch(int index);
+    T Fetch(int index);
+
+    void LoadData(T item);
 }

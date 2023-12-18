@@ -24,7 +24,7 @@
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Picture">
                     <Grid x:Name="itemThumbnail">
-                        <Image Source="{x:Bind ThumbnailBitmapImage}" />
+                        <Image Source="{x:Bind ThumbnailBitmapImage, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>

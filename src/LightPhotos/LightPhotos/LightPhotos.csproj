@@ -14,6 +14,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <PackageCertificateThumbprint>E3869ECC88DEF29498920E546C91CE9BDECE0F09</PackageCertificateThumbprint>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <Nullable>enable</Nullable>
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
   <ItemGroup>

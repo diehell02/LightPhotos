@@ -5,16 +5,18 @@ using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
+using LightPhotos.Collections;
 using LightPhotos.Contracts.Services;
 using LightPhotos.Contracts.ViewModels;
 using LightPhotos.Core.Contracts.Services;
 using LightPhotos.Core.Logging;
 using LightPhotos.Core.Models;
 using LightPhotos.Models;
-using LightPhotos.System.Collections;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage;
+using Windows.UI.Core;
 
 namespace LightPhotos.ViewModels;
 
@@ -22,7 +24,7 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
 {
     private class ItemProvider : IItemsProvider<Picture>
     {
-        FileInfo[]? _fileInfos;
+        FileInfo[]? _fileInfos = null;
 
         public int Count => _fileInfos?.Length ?? 0;
 
@@ -37,8 +39,8 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             {
                 return null;
             }
-            List<Picture> result = new List<Picture>();
-            for (var i = startIndex; i < count; i++)
+            var result = new List<Picture>();
+            for (var i = startIndex; i < _fileInfos.Length; i++)
             {
                 var fileInfo = _fileInfos[i];
                 var filePath = fileInfo.FullName;
@@ -53,7 +55,9 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             return result;
         }
 
-        public async Task<Picture> Fetch(int index)
+        static ulong fetchCount;
+
+        public Picture Fetch(int index)
         {
             if (_fileInfos is null)
             {
@@ -61,13 +65,28 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             }
             var fileInfo = _fileInfos[index];
             var filePath = fileInfo.FullName;
-            var file = await StorageFile.GetFileFromPathAsync(filePath);
-            var bitmapImage = new BitmapImage();
-            var picture = new Picture(bitmapImage, file);
-            var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-            Log.Information("GetThumbnailAsync Finished");
-            await bitmapImage?.SetSourceAsync(thumbnail);
+            var picture = new Picture(filePath);            
             return picture;
+        }
+
+        public void LoadData(Picture picture)
+        {
+            if (picture.IsLoaded)
+            {
+                return;
+            }
+            picture.IsLoaded = true;
+            DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
+            {
+                var filePath = picture.Path;
+                var file = await StorageFile.GetFileFromPathAsync(filePath);
+                var bitmapImage = new BitmapImage();
+                var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
+                await bitmapImage?.SetSourceAsync(thumbnail);
+                picture.StorageFile = file;
+                picture.ThumbnailBitmapImage = bitmapImage;
+                Log.Debug($"LoadData:{fetchCount++}");
+            });
         }
     }
 
@@ -77,17 +96,16 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
 
     public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
 
-    public DataVirtualizationCollection<Picture> BitmapImageSource { get; }
+    public DataVirtualizationCollection<Picture> BitmapImageSource { get; private set; }
 
     public ContentGridViewModel(INavigationService navigationService, ISampleDataService sampleDataService)
     {
         _navigationService = navigationService;
         _sampleDataService = sampleDataService;
         _itemProvider = new ItemProvider();
-        BitmapImageSource = new DataVirtualizationCollection<Picture>(_itemProvider);
     }
 
-    public async void OnNavigatedTo(object parameter)
+    public void OnNavigatedTo(object parameter)
     {
         Log.Information("Enter");
         Source.Clear();
@@ -98,6 +116,7 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             var directory = new DirectoryInfo(path);
             var files = directory.GetFiles();
             _itemProvider.SetFiles(files);
+            BitmapImageSource = new DataVirtualizationCollection<Picture>(_itemProvider);
             //for (var i = 0; i < files.Length; i++)
             //{
             //    var fileInfo = files[i];
