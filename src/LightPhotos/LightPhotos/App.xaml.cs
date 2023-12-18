@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using LightPhotos.Activation;
+﻿using LightPhotos.Activation;
 using LightPhotos.Contracts.Services;
 using LightPhotos.Core.Contracts.Services;
 using LightPhotos.Core.Services;
@@ -14,8 +11,6 @@ using LightPhotos.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using Serilog;
-using Serilog.Exceptions;
 
 namespace LightPhotos;
 
