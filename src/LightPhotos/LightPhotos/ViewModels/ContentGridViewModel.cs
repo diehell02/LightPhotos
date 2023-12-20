@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -110,8 +111,9 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
         {
             var path = folder.Path;
             var directory = new DirectoryInfo(path);
-            var files = directory.GetFiles();
-            _itemProvider.SetFiles(files);
+            Regex regex = WICRegex();
+            var files = directory.GetFiles().Where(file => regex.IsMatch(file.Name));
+            _itemProvider.SetFiles(files.ToArray());
             BitmapImageSource = new DataVirtualizationCollection<Picture>(_itemProvider);
             //for (var i = 0; i < files.Length; i++)
             //{
@@ -167,4 +169,7 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             _navigationService.NavigateTo(typeof(ContentGridDetailViewModel).FullName!, clickedItem);
         }
     }
+
+    [GeneratedRegex(@"^(?i).+\.(jpe|jpeg|jpg|png|bmp|dib|gif|tiff|tif|jxr|wdp|ico)$")]
+    private static partial Regex WICRegex();
 }
