@@ -6,7 +6,7 @@
     <RootNamespace>LightPhotos</RootNamespace>
     <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64</Platforms>
+    <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <UseWinUI>true</UseWinUI>

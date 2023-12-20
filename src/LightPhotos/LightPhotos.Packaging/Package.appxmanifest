@@ -9,7 +9,7 @@
   <Identity
     Name="13942GardenGuardian.LightPhotos"
     Publisher="CN=EFD9274E-AEB3-4566-9915-850D8CD8039F"
-    Version="1.0.7.0" />
+    Version="1.0.10.0" />
 
   <Properties>
     <DisplayName>Light Photos</DisplayName>
@@ -49,7 +49,6 @@
   </Applications>
 
   <Capabilities>
-    <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>
