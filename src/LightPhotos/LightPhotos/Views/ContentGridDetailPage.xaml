@@ -144,14 +144,5 @@
             PointerReleased="PictureImage_PointerReleased"
             PointerWheelChanged="PictureImage_PointerWheelChanged"
             Source="{x:Bind ViewModel.BitmapImage}" />
-        <Button
-            x:Name="closeButton"
-            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-            VerticalAlignment="Top"
-            Background="Transparent"
-            BorderThickness="0"
-            Command="{x:Bind ViewModel.GoBackCommand}">
-            <SymbolIcon Symbol="Back" />
-        </Button>
     </Grid>
 </Page>

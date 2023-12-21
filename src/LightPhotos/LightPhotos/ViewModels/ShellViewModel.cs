@@ -56,6 +56,11 @@ public partial class ShellViewModel : ObservableRecipient
         get;
     }
 
+    public ICommand GoBackCommand
+    {
+        get;
+    }
+
     public ShellViewModel(INavigationService navigationService, IStoragePickerService storagePickerService)
     {
         NavigationService = navigationService;
@@ -68,6 +73,7 @@ public partial class ShellViewModel : ObservableRecipient
         MenuViewsContentGridCommand = new RelayCommand(OnMenuViewsContentGrid);
         MenuViewsListDetailsCommand = new RelayCommand(OnMenuViewsListDetails);
         MenuViewsMainCommand = new RelayCommand(OnMenuViewsMain);
+        GoBackCommand = new RelayCommand(OnGoBack);
     }
 
     private void OnNavigated(object sender, NavigationEventArgs e) => IsBackEnabled = NavigationService.CanGoBack;
@@ -90,5 +96,13 @@ public partial class ShellViewModel : ObservableRecipient
             return;
         }
         NavigationService.NavigateTo(typeof(ContentGridViewModel).FullName!, folder);
+    }
+
+    private void OnGoBack()
+    {
+        if (NavigationService.CanGoBack)
+        {
+            NavigationService.GoBack();
+        }
     }
 }
