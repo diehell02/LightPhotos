@@ -8,9 +8,10 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using LightPhotos.Core.Helpers;
 using LightPhotos.Core.Logging;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Data;
-using Windows.Foundation;
 
 namespace LightPhotos.Collections;
 public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, IItemsRangeInfo
@@ -18,6 +19,7 @@ public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, 
     private readonly IItemsProvider<T> _itemsProvider;
     private readonly T[] _items;
     private bool _busy;
+    private readonly AntiShakeLimiter _antiShakeLimiter = new(TimeSpan.FromMilliseconds(500));
 
     public DataVirtualizationCollection(IItemsProvider<T> itemsProvider)
     {
@@ -144,15 +146,29 @@ public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, 
         {
             return;
         }
-        //var trackedRange = trackedItems[0];
-        //for (var i = trackedRange.FirstIndex; i <= trackedRange.LastIndex; i++)
-        //{
-        //    _itemsProvider.LoadData(FetchFromIndex(i));
-        //}
-        for (var i = visibleRange.FirstIndex; i <= visibleRange.LastIndex; i++)
+        void LoadTrackedRange()
         {
-            _itemsProvider.LoadData(FetchFromIndex(i));
+            var trackedRange = trackedItems[0];
+            for (var i = trackedRange.FirstIndex; i <= trackedRange.LastIndex; i++)
+            {
+                _itemsProvider.LoadData(FetchFromIndex(i));
+            }
         }
+        void LoadVisibleRange()
+        {
+            for (var i = visibleRange.FirstIndex; i <= visibleRange.LastIndex; i++)
+            {
+                _itemsProvider.LoadData(FetchFromIndex(i));
+            }
+        }
+        var thread = DispatcherQueue.GetForCurrentThread();
+        _antiShakeLimiter.Execute(() =>
+        {
+            thread.TryEnqueue(() =>
+            {
+                LoadTrackedRange();
+            });
+        });
     }
 
     public void Dispose() => throw new NotImplementedException();

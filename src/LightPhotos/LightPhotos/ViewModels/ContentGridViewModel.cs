@@ -67,23 +67,30 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             return picture;
         }
 
-        public void LoadData(Picture picture)
+        public async void LoadData(Picture picture)
         {
             if (picture.IsLoaded)
             {
                 return;
             }
             picture.IsLoaded = true;
-            DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
-            {
-                var filePath = picture.Path;
-                var file = await StorageFile.GetFileFromPathAsync(filePath);
-                var bitmapImage = new BitmapImage();
-                var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-                await bitmapImage?.SetSourceAsync(thumbnail);
-                picture.StorageFile = file;
-                picture.ThumbnailBitmapImage = bitmapImage;
-            });
+            //DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
+            //{
+            //    var filePath = picture.Path;
+            //    var file = await StorageFile.GetFileFromPathAsync(filePath);
+            //    var bitmapImage = new BitmapImage();
+            //    var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
+            //    await bitmapImage?.SetSourceAsync(thumbnail);
+            //    picture.StorageFile = file;
+            //    picture.ThumbnailBitmapImage = bitmapImage;
+            //});
+            var filePath = picture.Path;
+            var file = await StorageFile.GetFileFromPathAsync(filePath);
+            var bitmapImage = new BitmapImage();
+            var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
+            await bitmapImage?.SetSourceAsync(thumbnail);
+            picture.StorageFile = file;
+            picture.ThumbnailBitmapImage = bitmapImage;
         }
     }
 
