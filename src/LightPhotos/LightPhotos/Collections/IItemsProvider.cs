@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LightPhotos.Collections;
-public interface IItemsProvider<T>
+public interface IItemsProvider<T> where T : class
 {
     int Count
     {

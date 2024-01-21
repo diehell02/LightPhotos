@@ -4,6 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:proto="using:LightPhotos.Core.Protos"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
@@ -15,11 +18,27 @@
         <TextBlock
             Grid.Row="0"
             x:Uid="Main_Title"
+            Text="Choose the folder:"
             Style="{StaticResource PageTitleStyle}" />
 
-        <Grid Grid.Row="1">
-            
-        </Grid>
-        
+        <controls:AdaptiveGridView
+            Grid.Row="1"
+            animations:Connected.ListItemElementName="itemThumbnail"
+            animations:Connected.ListItemKey="animationKeyContentGrid"
+            DesiredWidth="180"
+            IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
+            ItemHeight="160"
+            ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+            SelectionMode="Single"
+            StretchContentForSingleRow="True">
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="proto:Category">
+                    <Grid x:Name="itemThumbnail">
+                        <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
     </Grid>
 </Page>

@@ -189,4 +189,13 @@
   <data name="ShellMenuItem_File_Open.Text" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="Settings_ServerAddress.Text" xml:space="preserve">
+    <value>ServerAddress</value>
+  </data>
+  <data name="Settings_ServerAddressDescription.Text" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Settings_ServerAddress_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>

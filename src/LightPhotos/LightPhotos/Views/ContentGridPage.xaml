@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:proto="using:LightPhotos.Core.Protos"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,6 +11,32 @@
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <controls:AdaptiveGridView
+            Grid.Row="0"
+            animations:Connected.ListItemElementName="itemThumbnail"
+            animations:Connected.ListItemKey="animationKeyContentGrid"
+            DesiredWidth="180"
+            IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.FolderClickCommand}"
+            ItemHeight="160"
+            ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+            SelectionMode="Single"
+            StretchContentForSingleRow="True">
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="proto:Category">
+                    <Grid x:Name="itemThumbnail" Width="180" Height="160">
+                        <Viewbox>
+                            <SymbolIcon Symbol="Folder" />
+                        </Viewbox>
+                        <TextBlock VerticalAlignment="Bottom" Text="{x:Bind Name, Mode=OneTime}" />
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
         <controls:AdaptiveGridView
             Grid.Row="1"
             animations:Connected.ListItemElementName="itemThumbnail"
@@ -19,7 +46,7 @@
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
             ItemHeight="160"
             ItemsSource="{x:Bind ViewModel.BitmapImageSource, Mode=OneWay}"
-            SelectionMode="Multiple"
+            SelectionMode="Single"
             StretchContentForSingleRow="False">
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Picture">

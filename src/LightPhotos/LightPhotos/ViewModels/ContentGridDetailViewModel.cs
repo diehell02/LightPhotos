@@ -7,17 +7,17 @@ using LightPhotos.Contracts.Services;
 using LightPhotos.Contracts.ViewModels;
 using LightPhotos.Core.Contracts.Services;
 using LightPhotos.Core.Models;
+using LightPhotos.Core.Protos;
 using LightPhotos.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage;
 
 namespace LightPhotos.ViewModels;
 
 public partial class ContentGridDetailViewModel : ObservableRecipient, INavigationAware
 {
-    private readonly ISampleDataService _sampleDataService;
-
     private readonly INavigationService _navigationService;
+
+    private readonly IPhotoService _photoService;
 
     //[ObservableProperty]
     //private SampleOrder? item;
@@ -33,15 +33,15 @@ public partial class ContentGridDetailViewModel : ObservableRecipient, INavigati
         get;
     }
 
-    public ContentGridDetailViewModel(ISampleDataService sampleDataService, INavigationService navigationService)
+    public ContentGridDetailViewModel(INavigationService navigationService, IPhotoService photoService)
     {
-        _sampleDataService = sampleDataService;
         _navigationService = navigationService;
+        _photoService = photoService;
 
         GoBackCommand = new RelayCommand(OnGoBack);
     }
 
-    public void OnNavigatedTo(object parameter)
+    public async void OnNavigatedTo(object parameter)
     {
         //if (parameter is long orderID)
         //{
@@ -51,7 +51,11 @@ public partial class ContentGridDetailViewModel : ObservableRecipient, INavigati
         if (parameter is Picture picture)
         {
             Item = picture;
-            BitmapImage = new BitmapImage(new Uri(picture.StorageFile.Path, UriKind.RelativeOrAbsolute));
+            var bitmapImage = new BitmapImage();
+            var bytes = await _photoService.GetContentAsync(picture.ImageFile);
+            using var memoryStream = new MemoryStream(bytes);
+            await bitmapImage.SetSourceAsync(memoryStream.AsRandomAccessStream());
+            BitmapImage = bitmapImage;
         }
     }
 

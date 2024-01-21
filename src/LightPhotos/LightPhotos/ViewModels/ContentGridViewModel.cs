@@ -12,24 +12,24 @@ using LightPhotos.Contracts.ViewModels;
 using LightPhotos.Core.Contracts.Services;
 using LightPhotos.Core.Logging;
 using LightPhotos.Core.Models;
+using LightPhotos.Core.Protos;
 using LightPhotos.Models;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage;
 using Windows.UI.Core;
 
 namespace LightPhotos.ViewModels;
 
 public partial class ContentGridViewModel : ObservableRecipient, INavigationAware
 {
-    private class ItemProvider : IItemsProvider<Picture>
+    private class ItemProvider(IPhotoService _photoService) : IItemsProvider<Picture>
     {
-        FileInfo[]? _fileInfos = null;
+        ImageFile[]? _fileInfos = null;
 
         public int Count => _fileInfos?.Length ?? 0;
 
-        public void SetFiles(FileInfo[] fileInfos)
+        public void SetFiles(ImageFile[] fileInfos)
         {
             _fileInfos = fileInfos;
         }
@@ -38,18 +38,17 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
         {
             if (_fileInfos is null)
             {
-                return null;
+                return new List<Picture>();
             }
             var result = new List<Picture>();
             for (var i = startIndex; i < _fileInfos.Length; i++)
             {
                 var fileInfo = _fileInfos[i];
-                var filePath = fileInfo.FullName;
-                var file = await StorageFile.GetFileFromPathAsync(filePath);
                 var bitmapImage = new BitmapImage();
-                var picture = new Picture(bitmapImage, file);
-                var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-                await bitmapImage?.SetSourceAsync(thumbnail);
+                var picture = new Picture(bitmapImage, fileInfo);
+                var thumbnailBytes = await _photoService.GetThumbnailAsync(fileInfo);
+                using var stream = new MemoryStream(thumbnailBytes);
+                await bitmapImage?.SetSourceAsync(stream.AsRandomAccessStream());
                 result.Add(picture);
             }
             return result;
@@ -62,8 +61,7 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
                 return null;
             }
             var fileInfo = _fileInfos[index];
-            var filePath = fileInfo.FullName;
-            var picture = new Picture(filePath);            
+            var picture = new Picture(fileInfo);            
             return picture;
         }
 
@@ -73,86 +71,47 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             {
                 return;
             }
-            picture.IsLoaded = true;
-            //DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
-            //{
-            //    var filePath = picture.Path;
-            //    var file = await StorageFile.GetFileFromPathAsync(filePath);
-            //    var bitmapImage = new BitmapImage();
-            //    var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-            //    await bitmapImage?.SetSourceAsync(thumbnail);
-            //    picture.StorageFile = file;
-            //    picture.ThumbnailBitmapImage = bitmapImage;
-            //});
-            var filePath = picture.Path;
-            var file = await StorageFile.GetFileFromPathAsync(filePath);
             var bitmapImage = new BitmapImage();
-            var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-            await bitmapImage?.SetSourceAsync(thumbnail);
-            picture.StorageFile = file;
+            var thumbnailBytes = await _photoService.GetThumbnailAsync(picture.ImageFile);
+            using var stream = new MemoryStream(thumbnailBytes);
+            await bitmapImage?.SetSourceAsync(stream.AsRandomAccessStream());
             picture.ThumbnailBitmapImage = bitmapImage;
         }
     }
 
     private readonly INavigationService _navigationService;
-    private readonly ISampleDataService _sampleDataService;
+    private readonly IPhotoService _photoService;
     private readonly ItemProvider _itemProvider;
 
-    public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
+    [ObservableProperty]
+    private DataVirtualizationCollection<Picture>? _bitmapImageSource;
 
-    public DataVirtualizationCollection<Picture> BitmapImageSource { get; private set; }
+    [ObservableProperty]
+    private ObservableCollection<Category> _categories = [];
 
-    public ContentGridViewModel(INavigationService navigationService, ISampleDataService sampleDataService)
+    public ContentGridViewModel(INavigationService navigationService, IPhotoService photoService)
     {
         _navigationService = navigationService;
-        _sampleDataService = sampleDataService;
-        _itemProvider = new ItemProvider();
+        _photoService = photoService;
+        _itemProvider = new ItemProvider(_photoService);
     }
 
     public void OnNavigatedTo(object parameter)
     {
         Log.Information("Enter");
-        Source.Clear();
-
-        if (parameter is StorageFolder folder)
+        if (parameter is Category category)
         {
-            var path = folder.Path;
-            var directory = new DirectoryInfo(path);
-            Regex regex = WICRegex();
-            var files = directory.GetFiles().Where(file => regex.IsMatch(file.Name));
-            _itemProvider.SetFiles(files.ToArray());
-            BitmapImageSource = new DataVirtualizationCollection<Picture>(_itemProvider);
-            //for (var i = 0; i < files.Length; i++)
-            //{
-            //    var fileInfo = files[i];
-            //    var filePath = fileInfo.FullName;
-            //    var file = await StorageFile.GetFileFromPathAsync(filePath);
-            //    BitmapImage? bitmapImage;
-            //    if (BitmapImageSource.Count <= i)
-            //    {
-            //        bitmapImage = new BitmapImage();
-            //        BitmapImageSource.Add(new Picture(bitmapImage, file));
-            //    }
-            //    else
-            //    {
-            //        BitmapImageSource[i].StorageFile = file;
-            //        bitmapImage = BitmapImageSource[i].ThumbnailBitmapImage;
-            //    }
-            //    var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.PicturesView);
-            //    Log.Information("GetThumbnailAsync Finished");
-            //    await bitmapImage?.SetSourceAsync(thumbnail);
-            //    Log.Information("SetSourceAsync Finished");
-            //}
+            _itemProvider.SetFiles([.. category.ImageFiles]);
+            BitmapImageSource = new DataVirtualizationCollection<Picture>(_itemProvider);            
         }
-
+        else if (parameter is IEnumerable<Category> categories)
+        {
+            foreach (var item in categories)
+            {
+                Categories.Add(item);
+            }
+        }
         Log.Information("Exit");
-
-        //// TODO: Replace with real data.
-        //var data = await _sampleDataService.GetContentGridDataAsync();
-        //foreach (var item in data)
-        //{
-        //    Source.Add(item);
-        //}
     }
 
     public void OnNavigatedFrom()
@@ -160,14 +119,12 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
     }
 
     [RelayCommand]
-    //private void OnItemClick(SampleOrder? clickedItem)
-    //{
-    //    if (clickedItem != null)
-    //    {
-    //        _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-    //        _navigationService.NavigateTo(typeof(ContentGridDetailViewModel).FullName!, clickedItem.OrderID);
-    //    }
-    //}
+    private void OnFolderClick(Category? clickedItem)
+    {
+        _navigationService.NavigateTo(typeof(ContentGridViewModel).FullName!, clickedItem);
+    }
+
+    [RelayCommand]
     private void OnItemClick(Picture? clickedItem)
     {
         if (clickedItem != null)
@@ -176,7 +133,4 @@ public partial class ContentGridViewModel : ObservableRecipient, INavigationAwar
             _navigationService.NavigateTo(typeof(ContentGridDetailViewModel).FullName!, clickedItem);
         }
     }
-
-    [GeneratedRegex(@"^(?i).+\.(jpe|jpeg|jpg|png|bmp|dib|gif|tiff|tif|jxr|wdp|ico)$")]
-    private static partial Regex WICRegex();
 }

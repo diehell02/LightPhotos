@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import "Protos/category.proto";
+import "Protos/image_file.proto";
+
+option csharp_namespace = "LightPhotos.Core.Protos";
+
+package Protos;
+
+service PhotoService {
+	rpc GetRootCategories (GetRootCategoriesRequest) returns (GetRootCategoriesResponse);
+	rpc GetCategories (GetCategoriesRequest) returns (GetCategoriesResponse);
+	rpc GetFiles (GetFilesRequest) returns (GetFilesResponse);
+	rpc GetThumbnail (GetThumbnailRequest) returns (GetThumbnailResponse);
+	rpc GetContent (GetContentRequest) returns (GetContentResponse);
+}
+
+message GetRootCategoriesRequest {
+}
+
+message GetRootCategoriesResponse {
+	repeated Category categories = 1;
+}
+
+message GetCategoriesRequest {
+	Category category = 1;
+}
+
+message GetCategoriesResponse {
+	repeated Category categories = 1;
+}
+
+message GetFilesRequest {
+	Category category = 1;
+}
+
+message GetFilesResponse {
+	repeated ImageFile files = 1;
+}
+
+message GetThumbnailRequest {
+	ImageFile file = 1;
+	uint32 viewPortWidth = 2;
+	uint32 viewPortHeight = 3;
+}
+
+message GetThumbnailResponse {
+	bytes data = 1;
+}
+
+message GetContentRequest {
+	ImageFile file = 1;
+}
+
+message GetContentResponse {
+	bytes data = 1;
+}

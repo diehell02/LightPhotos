@@ -1,0 +1,11 @@
+@LightPhotos.Server_HostAddress = http://localhost:5039
+
+GET {{LightPhotos.Server_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{LightPhotos.Server_HostAddress}}/todos/1
+Accept: application/json
+
+###

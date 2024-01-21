@@ -14,12 +14,12 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Data;
 
 namespace LightPhotos.Collections;
-public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, IItemsRangeInfo
+public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, IItemsRangeInfo 
+    where T : class
 {
     private readonly IItemsProvider<T> _itemsProvider;
     private readonly T[] _items;
-    private bool _busy;
-    private readonly AntiShakeLimiter _antiShakeLimiter = new(TimeSpan.FromMilliseconds(500));
+    private readonly AntiShakeLimiter _antiShakeLimiter = new(TimeSpan.FromMilliseconds(1000));
 
     public DataVirtualizationCollection(IItemsProvider<T> itemsProvider)
     {
@@ -154,20 +154,17 @@ public class DataVirtualizationCollection<T> : IList, INotifyCollectionChanged, 
                 _itemsProvider.LoadData(FetchFromIndex(i));
             }
         }
-        void LoadVisibleRange()
-        {
-            for (var i = visibleRange.FirstIndex; i <= visibleRange.LastIndex; i++)
-            {
-                _itemsProvider.LoadData(FetchFromIndex(i));
-            }
-        }
+        //void LoadVisibleRange()
+        //{
+        //    for (var i = visibleRange.FirstIndex; i <= visibleRange.LastIndex; i++)
+        //    {
+        //        _itemsProvider.LoadData(FetchFromIndex(i));
+        //    }
+        //}
         var thread = DispatcherQueue.GetForCurrentThread();
         _antiShakeLimiter.Execute(() =>
         {
-            thread.TryEnqueue(() =>
-            {
-                LoadTrackedRange();
-            });
+            thread.TryEnqueue(LoadTrackedRange);
         });
     }
 

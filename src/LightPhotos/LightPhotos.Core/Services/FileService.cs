@@ -8,6 +8,8 @@ namespace LightPhotos.Core.Services;
 
 public class FileService : IFileService
 {
+    private readonly object _lock = new();
+
     public T Read<T>(string folderPath, string fileName)
     {
         var path = Path.Combine(folderPath, fileName);
@@ -36,6 +38,48 @@ public class FileService : IFileService
         if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
         {
             File.Delete(Path.Combine(folderPath, fileName));
+        }
+    }
+
+    public bool Exists(string path)
+    {
+        lock(_lock) 
+        {
+            if (File.Exists(path)) 
+            {
+                return true;
+            } 
+            else if (Directory.Exists(path)) 
+            {
+                return true;
+            } 
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    public byte[] ReadAllBytes(string filePath)
+    {
+        lock(_lock) 
+        {
+            return File.ReadAllBytes(filePath);
+        }
+    }
+
+    public void WriteAllBytes(string filePath, byte[] bytes)
+    {
+        lock(_lock)
+        {
+            if (File.Exists(filePath)) 
+            {
+                return;
+            }
+            else
+            {
+                File.WriteAllBytes(filePath, bytes);
+            } 
         }
     }
 }

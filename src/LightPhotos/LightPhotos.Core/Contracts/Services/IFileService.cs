@@ -7,4 +7,10 @@ public interface IFileService
     void Save<T>(string folderPath, string fileName, T content);
 
     void Delete(string folderPath, string fileName);
+
+    bool Exists(string path);
+
+    byte[] ReadAllBytes(string filePath);
+
+    void WriteAllBytes(string filePath, byte[] bytes);
 }
